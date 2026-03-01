@@ -1,0 +1,84 @@
+.login-container, .homepage {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f7f6;
+  padding: 20px;
+}
+
+.header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.user-profile img { width: 45px; border-radius: 50%; vertical-align: middle; margin-right: 12px; border: 2px solid #2196f3; }
+
+.modal-overlay {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  margin-bottom: 30px;
+  border: 1px solid #e0e0e0;
+}
+
+.new-class-table table, .class-card table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.new-class-table th, .new-class-table td, .class-card th, .class-card td {
+  padding: 10px;
+  text-align: center;
+}
+
+.class-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  width: 100%;
+}
+
+.class-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  cursor: pointer;
+  width: 280px;
+  border: 1px solid #eee;
+  transition: all 0.3s ease;
+}
+
+.class-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  border-color: #2196f3;
+}
+
+.student-list {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed #ddd;
+  font-size: 0.9em;
+  text-align: left;
+}
+
+.names { color: #666; margin-top: 5px; min-height: 20px; }
+
+.btn-login { background: #4caf50; color: white; padding: 12px 30px; font-size: 1.1em; border: none; border-radius: 5px; cursor: pointer; }
+.btn-new { background: #2196f3; color: white; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; padding: 10px 20px; }
+.btn-save { background: #ff9800; color: white; border: none; border-radius: 4px; padding: 8px 20px; cursor: pointer; }
+.btn-cancel { background: #e0e0e0; margin-left: 10px; border: none; border-radius: 4px; padding: 8px 20px; cursor: pointer; }
