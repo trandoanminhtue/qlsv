@@ -7,6 +7,7 @@ async function bootstrap() {
   // Enable CORS để frontend React có thể gọi API
   app.enableCors({
     origin: 'http://localhost:5173', // URL của frontend Vite
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 

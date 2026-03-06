@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Định nghĩa cấu trúc của một Lớp học
 interface ClassItem {
@@ -7,68 +7,158 @@ interface ClassItem {
   students: string[];
 }
 
+const API_BASE_URL = 'http://localhost:3000'; // URL của backend NestJS
+
 const HomePage: React.FC = () => {
-  // Quản lý danh sách lớp học (mảng các Object ClassItem)
+  // Quản lý danh sách lớp học
   const [classList, setClassList] = useState<ClassItem[]>([]);
   
-  // Trạng thái hiển thị Form "New" (true: hiện, false: ẩn)
+  // Trạng thái hiển thị Form "New"
   const [showNewForm, setShowNewForm] = useState<boolean>(false);
   
-  // Lưu giá trị người dùng nhập vào ô tên lớp trong bảng New
+  // Lưu giá trị người dùng nhập vào ô tên lớp
   const [tempClassName, setTempClassName] = useState<string>('');
+  
+  // Trạng thái loading để UX tốt hơn
+  const [loading, setLoading] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
-  // Hàm xử lý lưu lớp học mới
-  const saveClass = () => {
-    // Kiểm tra nếu tên lớp trống hoặc chỉ có khoảng trắng thì không cho lưu
+  // 1. Gọi API GET khi component load - FETCH TRỰC TIẾP
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    setInitialLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/classes`);
+      if (!response.ok) {
+        throw new Error('Lỗi khi tải dữ liệu');
+      }
+      const data = await response.json();
+      setClassList(data);
+    } catch (error) {
+      console.error('Lỗi:', error);
+      alert('Không thể tải danh sách lớp từ server!');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  // 2. Hàm xử lý lưu lớp học mới - FETCH TRỰC TIẾP
+  const saveClass = async () => {
     if (!tempClassName.trim()) {
       alert("Vui lòng nhập tên lớp");
       return;
     }
 
-    // Tạo một đối tượng lớp học mới
-    const newClass: ClassItem = {
-      id: Date.now(), // Dùng timestamp làm ID duy nhất
-      name: tempClassName,
-      students: [] // Khởi tạo danh sách học sinh rỗng
-    };
+    setLoading(true);
+    try {
+      // Gọi API POST trực tiếp
+      const response = await fetch(`${API_BASE_URL}/classes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: tempClassName })
+      });
 
-    // Cập nhật danh sách lớp: giữ lại lớp cũ và thêm lớp mới vào cuối
-    setClassList([...classList, newClass]);
-    
-    // Reset các giá trị về mặc định sau khi lưu thành công
-    setTempClassName('');
-    setShowNewForm(false);
+      if (!response.ok) {
+        throw new Error('Lỗi khi tạo lớp');
+      }
+
+      const newClass = await response.json();
+      
+      // Cập nhật state
+      setClassList([...classList, newClass]);
+      
+      // Reset form
+      setTempClassName('');
+      setShowNewForm(false);
+      alert('Tạo lớp thành công!');
+    } catch (error) {
+      console.error('Lỗi:', error);
+      alert('Không thể tạo lớp. Kiểm tra kết nối server!');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Hàm thêm học sinh khi người dùng nhấn vào thẻ lớp học
-  const addStudent = (id: number) => {
-    // Dùng prompt để lấy tên học sinh nhanh (không cần tạo thêm form phức tạp)
+  // 3. Hàm thêm học sinh - FETCH TRỰC TIẾP
+  const addStudent = async (id: number) => {
     const studentName = prompt("Nhập tên học sinh mới:");
     
-    // Nếu có nhập tên (không nhấn Cancel hoặc để trống)
     if (studentName && studentName.trim() !== "") {
-      // Tìm lớp học có ID tương ứng và cập nhật mảng students của lớp đó
-      setClassList(prevList => 
-        prevList.map(c => 
-          c.id === id ? { ...c, students: [...c.students, studentName] } : c
-        )
-      );
+      setLoading(true);
+      try {
+        // Gọi API POST thêm học sinh trực tiếp
+        const response = await fetch(`${API_BASE_URL}/classes/${id}/students`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: studentName })
+        });
+
+        if (!response.ok) {
+          throw new Error('Lỗi khi thêm học sinh');
+        }
+
+        const updatedClass = await response.json();
+        
+        // Cập nhật state
+        setClassList(prevList => 
+          prevList.map(c => c.id === id ? updatedClass : c)
+        );
+        
+        alert('Thêm học sinh thành công!');
+      } catch (error) {
+        console.error('Lỗi:', error);
+        alert('Không thể thêm học sinh. Kiểm tra kết nối server!');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // 4. Hàm xóa lớp (thêm cho vui)
+  const deleteClass = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Không trigger sự kiện click của thẻ cha
+    
+    if (window.confirm('Bạn có chắc muốn xóa lớp này?')) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/classes/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) {
+          throw new Error('Lỗi khi xóa lớp');
+        }
+
+        // Cập nhật state: xóa lớp khỏi danh sách
+        setClassList(prevList => prevList.filter(c => c.id !== id));
+        alert('Xóa lớp thành công!');
+      } catch (error) {
+        console.error('Lỗi:', error);
+        alert('Không thể xóa lớp!');
+      }
     }
   };
 
   return (
     <div className="homepage">
-      {/* Header chứa thông tin User và nút New */}
+      {/* Header */}
       <header className="header">
         <div className="user-profile">
           <img src="https://ui-avatars.com/api/?name=Teacher" alt="avatar" />
           <span>Giáo viên: Nguyễn Văn A</span>
         </div>
-        {/* Nhấn nút này sẽ bật trạng thái showNewForm lên true */}
-        <button className="btn-new" onClick={() => setShowNewForm(true)}>+ New</button>
+        <button 
+          className="btn-new" 
+          onClick={() => setShowNewForm(true)}
+          disabled={loading || initialLoading}
+        >
+          {loading ? 'Đang xử lý...' : '+ New'}
+        </button>
       </header>
 
-      {/* Logic hiển thị Bảng thêm lớp mới (Chỉ hiện khi showNewForm === true) */}
+      {/* Form tạo lớp mới */}
       {showNewForm && (
         <div className="modal-overlay">
           <div className="new-class-table">
@@ -89,29 +179,74 @@ const HomePage: React.FC = () => {
                       onChange={(e) => setTempClassName(e.target.value)}
                       placeholder="Nhập tên lớp..."
                       autoFocus
+                      disabled={loading}
                     />
                   </td>
-                  <td>0 (Tự động)</td>
+                  <td>0</td>
                 </tr>
               </tbody>
             </table>
             <div className="action-btns">
-              <button className="btn-save" onClick={saveClass}>Save</button>
-              <button className="btn-cancel" onClick={() => setShowNewForm(false)}>Hủy</button>
+              <button 
+                className="btn-save" 
+                onClick={saveClass}
+                disabled={loading}
+              >
+                {loading ? 'Đang lưu...' : 'Save'}
+              </button>
+              <button 
+                className="btn-cancel" 
+                onClick={() => setShowNewForm(false)}
+                disabled={loading}
+              >
+                Hủy
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Khu vực hiển thị danh sách lớp học đã tạo */}
+      {/* Danh sách lớp học */}
       <main className="content">
         <h2>Danh Sách Lớp Học</h2>
-        {/* Nếu chưa có lớp nào thì hiện thông báo nhắc nhở */}
-        {classList.length === 0 && <p>Chưa có lớp nào, hãy nhấn "New" để tạo.</p>}
+        
+        {initialLoading && <p>Đang tải dữ liệu từ server...</p>}
+        
+        {!initialLoading && classList.length === 0 && (
+          <p>Chưa có lớp nào, hãy nhấn "New" để tạo.</p>
+        )}
         
         <div className="class-grid">
           {classList.map((item) => (
-            <div key={item.id} className="class-card" onClick={() => addStudent(item.id)}>
+            <div 
+              key={item.id} 
+              className="class-card" 
+              onClick={() => !loading && addStudent(item.id)}
+              style={{ 
+                opacity: loading ? 0.7 : 1, 
+                cursor: loading ? 'wait' : 'pointer',
+                position: 'relative'
+              }}
+            >
+              {/* Nút xóa */}
+              <button 
+                onClick={(e) => deleteClass(item.id, e)}
+                style={{
+                  position: 'absolute',
+                  top: '5px',
+                  right: '5px',
+                  background: 'red',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '25px',
+                  height: '25px',
+                  cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+
               <table border={1}>
                 <thead>
                   <tr>
@@ -130,11 +265,10 @@ const HomePage: React.FC = () => {
               <div className="student-list">
                 <strong>Danh sách:</strong>
                 <div className="names">
-                  {/* Join các tên học sinh trong mảng thành chuỗi cách nhau bởi dấu phẩy */}
                   {item.students.length > 0 ? item.students.join(', ') : 'Chưa có học sinh'}
                 </div>
               </div>
-              <p className="hint">Click vào thẻ này để thêm học sinh</p>
+              <p className="hint">Click vào thẻ để thêm học sinh</p>
             </div>
           ))}
         </div>
