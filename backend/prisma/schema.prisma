@@ -9,17 +9,8 @@ datasource db {
 
 model Class {
   id        Int      @id @default(autoincrement())
-  name      String   @unique
-  students  Student[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Student {
-  id        Int      @id @default(autoincrement())
   name      String
-  classId   Int
-  class     Class    @relation(fields: [classId], references: [id])
+  students  String[] // Phải là String[] để dùng được hàm push và filter
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

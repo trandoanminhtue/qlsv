@@ -2,9 +2,10 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
-  Delete,
+  // Delete,
   ParseIntPipe,
 } from '@nestjs/common';
 import { ClassesService } from './class.service';
