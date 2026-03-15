@@ -1,17 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-// Định nghĩa kiểu dữ liệu cho Props (dữ liệu truyền từ App vào)
-interface LoginPageProps {
-  onLogin: () => void; // Hàm xử lý khi nhấn nút đăng nhập
-}
+const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   return (
-    <div className="login-container">
-      <h1>QUẢN LÝ TRUNG TÂM</h1>
-      <p>Dành cho Giáo viên</p>
-      {/* Khi click, gọi hàm onLogin được truyền từ App.tsx để đổi trạng thái screen */}
-      <button className="btn-login" onClick={onLogin}>Đăng nhập</button>
+    <div style={{ textAlign: 'center', marginTop: '50px' }}>
+      <h1>Menu</h1>
+      <button onClick={() => navigate('/home')}>Đăng nhập</button>
+      <br />
     </div>
   );
 };

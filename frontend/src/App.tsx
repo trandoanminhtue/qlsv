@@ -1,28 +1,17 @@
-import { useState } from 'react';
-import LoginPage from './pages/LoginPage';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
-import './App.css';
+import LoginPage from './pages/LoginPage';
 
-function App() {
-  // State quản lý việc điều hướng (Routing) đơn giản
-  // 'login': hiện trang Đăng nhập | 'home': hiện trang Chủ
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'home'>('login');
-
-  // Hàm để chuyển sang màn hình trang chủ
-  const navigateToHome = () => {
-    setCurrentScreen('home');
-  };
-
+const App: React.FC = () => {
   return (
-    <div className="app-container">
-      {/* Kiểm tra điều kiện để render trang tương ứng */}
-      {currentScreen === 'login' ? (
-        <LoginPage onLogin={navigateToHome} />
-      ) : (
-        <HomePage />
-      )}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/home" element={<HomePage />} />
+      </Routes>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;

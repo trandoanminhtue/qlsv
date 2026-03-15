@@ -1,16 +1,28 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma/client"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Class {
+  id        Int       @id @default(autoincrement())
+  name      String
+  // Quan hệ: Một lớp có nhiều sinh viên
+  students  Student[] 
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Student {
   id        Int      @id @default(autoincrement())
   name      String
-  students  String[] // Phải là String[] để dùng được hàm push và filter
+  // Lưu ID của lớp để biết sinh viên này thuộc lớp nào
+  classId   Int
+  // Thiết lập mối quan hệ với bảng Class
+  class     Class    @relation(fields: [classId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
